@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.15.1/dist/phaser-arcade-physics.min.js"></script>
+  </head>
+  <body>
+    <script>
+      var width = 700;
+      var height = 900;
+
+      var asteroids;
+      var player;
+      var atmosphereLimit;
+      var cursors;
+
+      var asteroidsDestroyed = 0;
+      var asteroidsMissed = 0;
+
+      var config = {
+        type: Phaser.AUTO,
+        width: width,
+        height: height,
+        physics: {
+          default: 'arcade',
+          arcade: {
+            gravity: { y: 200 }
+          }
+        },
+        scene: {
+          preload: preload,
+          create: create,
+          update: update
+        }
+      };
+
+      var game = new Phaser.Game(config);
+
+      function preload ()
+      {
+        this.load.image('sky', 'assets/sprites/sky.png');
+        this.load.image('asteroid', 'assets/sprites/asteroid.png');
+        this.load.image('ground', 'assets/sprites/ground.png');
+        this.load.image('ship', 'assets/sprites/ship.png');
+        this.load.image('green', 'assets/particles/green.png');
+      }
+
+      function create ()
+      {
+        cursors = this.input.keyboard.createCursorKeys();
+
+        this.add.image(400, 300, 'sky');
+
+        asteroids = this.physics.add.group({
+          key: 'asteroid',
+          repeat: 5,
+          setXY: { x: 50, y: 0, stepX: 110 }
+        });
+
+        asteroids.getChildren().forEach(el => el.setScale(0.5));
+
+        asteroids.children.iterate(function(child) {
+          child.setBounceY(Phaser.Math.FloatBetween(0.4, 0.8));
+        });
+
+        var particles = this.add.particles('green');
+
+        var particleColl = {
+          contains: function (x, y) {
+            asteroids.getChildren().forEach(function (asteroid) {
+              var hit = asteroid.body.hitTest(x, y);
+
+              if (hit) { destroyAsteroid(player, asteroid); }
+
+              return hit;
+            });
+          }
+        };
+
+        var emitter = particles.createEmitter({
+          speed: 100,
+          angle: 270,
+          gravityY: -300,
+          scale: { start: 1, end: 0 },
+          blendMode: 'ADD',
+          deathZone: { type: 'onEnter', source: particleColl }
+        });
+
+        player = this.physics.add.image(400, 810, 'ship');
+        player.angle = 180;
+        player.setScale(0.5);
+        player.setCollideWorldBounds(true);
+        emitter.startFollow(player);
+
+        atmosphereLimit = this.physics.add.staticGroup();
+
+        atmosphereLimit.create(0, 1100, 'ground').setScale(2.1).refreshBody();
+
+        this.physics.add.collider(player, atmosphereLimit);
+        this.physics.add.overlap(player, asteroids, destroyAsteroid, null, this);
+        this.physics.add.overlap(atmosphereLimit, asteroids, missAsteroid, null, this);
+      }
+
+      function update() {
+        if (cursors.left.isDown)
+        {
+          player.setVelocityX(-300);
+        }
+        else if (cursors.right.isDown)
+        {
+          player.setVelocityX(300);
+        }
+        else
+        {
+          player.setVelocityX(0);
+        }
+      }
+
+      function destroyAsteroid(player, asteroid) {
+        asteroidsDestroyed++;
+        asteroid.disableBody(true, true);
+      }
+
+      function missAsteroid(atmosphereLimit, asteroid) {
+        asteroidsMissed++;
+        asteroid.disableBody(true, true);
+      }
+    </script>
+
+  </body>
+</html>
