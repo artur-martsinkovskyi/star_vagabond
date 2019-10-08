@@ -23,6 +23,8 @@
       var startGameKey;
 
       var music;
+      var menuMusic;
+      var battleMusic;
 
       var gameOver = false
       var asteroidsDestroyed = 0;
@@ -79,6 +81,7 @@
 
         menuMusic = this.sound.add('menu_theme');
         battleMusic = this.sound.add('battle_theme');
+        music = [menuMusic, battleMusic];
         menuMusic.play();
         menuMusic.setLoop(true);
         battleMusic.setLoop(true);
@@ -94,6 +97,9 @@
       }
 
       function update() {
+        if (Phaser.Input.Keyboard.JustDown(muteMusicKey)) {
+          music.forEach(function (musicTrack) { musicTrack.setMute(!musicTrack.mute)});
+        }
         if(!gameStarted && !isLoadScreen) {
           (initGame.bind(this))();
         }
@@ -134,9 +140,7 @@
         {
           player.setVelocityX(300);
         }
-        else if (Phaser.Input.Keyboard.JustDown(muteMusicKey)) {
-          music.setMute(!music.mute);
-        } else {
+        else  {
           player.setVelocityX(0);
         }
       }
