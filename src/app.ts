@@ -1,3 +1,5 @@
+import "phaser";
+
 var width = 800;
 var height = 900;
 
@@ -31,10 +33,11 @@ var gameStarted = false;
 var gameOverTitle;
 var gameOverPrompt;
 
-var config = {
+var config : GameConfig = {
   type: Phaser.AUTO,
   width: width,
   height: height,
+  parent: "game",
   physics: {
     default: 'arcade',
     arcade: {
@@ -45,10 +48,20 @@ var config = {
     preload: preload,
     create: create,
     update: update
+  },
+  backgroundColor: "#000",
+};
+
+export class StarVagabond extends Phaser.Game {
+  constructor(config: GameConfig) {
+    super(config);
   }
 };
 
-var game = new Phaser.Game(config);
+window.onload = () => {
+  var game = new StarVagabond(config);
+};
+
 
 function preload ()
 {
