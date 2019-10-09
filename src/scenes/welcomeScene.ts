@@ -17,7 +17,10 @@ export class WelcomeScene extends Phaser.Scene {
 
   preload() : void {
     this.load.image('sky', 'assets/sprites/sky.png');
+
     this.load.audio('menu_theme', 'assets/music/menu.wav');
+    this.load.audio('battle_theme', 'assets/music/battle.wav');
+
     this.load.bitmapFont('title_font', 'assets/fonts/potra.png', 'assets/fonts/potra.fnt');
     this.load.bitmapFont('text_font', 'assets/fonts/vcr.png', 'assets/fonts/vcr.fnt');
   }

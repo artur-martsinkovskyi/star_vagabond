@@ -15,12 +15,6 @@ export class GameOverScene extends Phaser.Scene {
     });
   }
 
-  preload() : void {
-    this.load.image('sky', 'assets/sprites/sky.png');
-    this.load.audio('menu_theme', 'assets/music/menu.wav');
-    this.load.bitmapFont('text_font', 'assets/fonts/vcr.png', 'assets/fonts/vcr.fnt');
-  }
-
   create(): void {
     this.add.image(400, 300, 'sky');
 

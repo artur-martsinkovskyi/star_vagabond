@@ -22,13 +22,11 @@ export class GameScene extends Phaser.Scene {
   }
 
   preload(): void {
-    this.load.image('sky', 'assets/sprites/sky.png');
     this.load.image('asteroid', 'assets/sprites/asteroid.png');
     this.load.image('ground', 'assets/sprites/ground.png');
     this.load.image('ship', 'assets/sprites/ship.png');
     this.load.image('healthpoint', 'assets/sprites/heart.png');
     this.load.image('green', 'assets/particles/green.png');
-    this.load.audio('battle_theme', 'assets/music/battle.wav');
     this.load.bitmapFont('score_font', 'assets/fonts/pixelmania.png', 'assets/fonts/pixelmania.fnt');
 
   }
