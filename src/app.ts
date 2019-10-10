@@ -1,31 +1,30 @@
 import "phaser";
-import { WelcomeScene } from "./scenes/welcomeScene";
-import { GameScene } from "./scenes/gameScene";
 import { GameOverScene } from "./scenes/gameOverScene";
-
-var config : Phaser.Types.Core.GameConfig = {
-  title: "Star Vagabond",
-  type: Phaser.AUTO,
-  width: 800,
-  height: 900,
-  parent: "game",
-  physics: {
-    default: 'arcade',
-    arcade: {
-      gravity: { y: 200 }
-    }
-  },
-  scene: [WelcomeScene, GameScene, GameOverScene],
-  backgroundColor: "#000",
-};
+import { GameScene } from "./scenes/gameScene";
+import { WelcomeScene } from "./scenes/welcomeScene";
 
 export class StarVagabond extends Phaser.Game {
   constructor(config: Phaser.Types.Core.GameConfig) {
     super(config);
   }
-};
+}
 
 window.onload = () => {
-  var game = new StarVagabond(config);
-};
+  const config: Phaser.Types.Core.GameConfig = {
+    backgroundColor: "#000",
+    height: 900,
+    parent: "game",
+    physics: {
+      arcade: {
+        gravity: { y: 200 },
+      },
+      default: "arcade",
+    },
+    scene: [WelcomeScene, GameScene, GameOverScene],
+    title: "Star Vagabond",
+    type: Phaser.AUTO,
+    width: 800,
+  };
 
+  const game = new StarVagabond(config);
+};
