@@ -1,4 +1,5 @@
 import "phaser";
+import { Player } from "../entities/player";
 
 export class GameScene extends Phaser.Scene {
   public scoreText: Phaser.GameObjects.BitmapText;
@@ -7,7 +8,7 @@ export class GameScene extends Phaser.Scene {
 
   public healthpoints: Phaser.GameObjects.Group;
   public asteroids: Phaser.GameObjects.Group;
-  public player;
+  public player: Player;
   public atmosphereLimit: Phaser.Physics.Arcade.StaticGroup;
 
   public asteroidsDestroyed: number;
@@ -28,16 +29,12 @@ export class GameScene extends Phaser.Scene {
     this.load.image("healthpoint", "assets/sprites/heart.png");
     this.load.image("green", "assets/particles/green.png");
     this.load.bitmapFont("score_font", "assets/fonts/pixelmania.png", "assets/fonts/pixelmania.fnt");
-
   }
 
   public create(): void {
-    const self = this;
-
     this.asteroidsDestroyed = 0;
     this.cursors = this.input.keyboard.createCursorKeys();
     this.muteMusicKey = this.input.keyboard.addKey("M");
-
     this.add.image(400, 300, "sky");
 
     this.scoreText = this.add.bitmapText(70, 16, "score_font", "0", 32);
@@ -45,6 +42,7 @@ export class GameScene extends Phaser.Scene {
     this.add.image(35, 32, "asteroid").setScale(0.4);
 
     this.battleMusic = this.sound.add("battle_theme") as Phaser.Sound.HTML5AudioSound;
+    this.battleMusic.setMute(true);
     this.battleMusic.play();
 
     this.healthpoints = this.add.group({
@@ -56,52 +54,29 @@ export class GameScene extends Phaser.Scene {
     this.healthpoints.getChildren().forEach((el: Phaser.GameObjects.Image) => el.setScale(0.05));
     this.asteroids = this.physics.add.group();
 
-    const particles = this.add.particles("green");
-
-    const particleColl = {
-      contains(x, y) {
-        self.asteroids.getChildren().forEach((asteroid: Phaser.GameObjects.Sprite) => {
-          const hit = (asteroid.body as Phaser.Physics.Arcade.Body).hitTest(x, y);
-
-          if (hit) { self.destroyAsteroid(self.player, asteroid); }
-
-          return hit;
-        });
-      },
-    };
-
-    const emitter = particles.createEmitter({
-      angle: 270,
-      blendMode: "ADD",
-      deathZone: { type: "onEnter", source: particleColl },
-      gravityY: -300,
-      scale: { start: 0.8, end: 0 },
-      speed: 500,
-    } as Phaser.Types.GameObjects.Particles.ParticleEmitterConfig);
-
-    this.player = this.physics.add.image(400, 810, "ship");
-    this.player.angle = 180;
-    this.player.setScale(0.5);
-    this.player.setCollideWorldBounds(true);
-    emitter.startFollow(this.player);
-
     this.atmosphereLimit = this.physics.add.staticGroup();
 
     this.atmosphereLimit.create(0, 1100, "ground").setScale(2.1).refreshBody();
-    this.physics.add.collider(this.player, this.atmosphereLimit);
+    this.player = new Player({
+      key: "ship",
+      scene: this,
+      x: 400,
+      y: 810,
+    });
+
     this.physics.add.overlap(this.atmosphereLimit, this.asteroids, this.missAsteroid, null, this);
     this.spawnAsteroids();
   }
 
   public update(): void {
     if (this.cursors.left.isDown) {
-      this.player.setVelocityX(-300);
+      this.player.goLeft();
     } else if (this.cursors.right.isDown) {
-      this.player.setVelocityX(300);
+      this.player.goRight();
     } else if (Phaser.Input.Keyboard.JustDown(this.muteMusicKey)) {
       this.battleMusic.setMute(!this.battleMusic.mute);
     } else  {
-      this.player.setVelocityX(0);
+      this.player.standStill();
     }
   }
 

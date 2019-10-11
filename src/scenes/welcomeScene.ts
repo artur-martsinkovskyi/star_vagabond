@@ -37,6 +37,7 @@ export class WelcomeScene extends Phaser.Scene {
     this.menuMusic = this.sound.add("menu_theme") as Phaser.Sound.HTML5AudioSound;
     this.menuMusic.play();
     this.menuMusic.setLoop(true);
+    this.menuMusic.setMute(true);
   }
 
   public update(): void {
