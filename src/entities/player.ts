@@ -1,8 +1,22 @@
 import "phaser";
 import { GameScene } from "../scenes/gameScene";
 
+export const MAX_HEALTH = 5;
+
 export class Player extends Phaser.GameObjects.Image {
-  public health: number;
+  private ownHealth: number;
+
+  public get health(): number {
+    return this.ownHealth;
+  }
+
+  public set health(value: number) {
+    if (value === this.ownHealth) { return; }
+    this.ownHealth = value;
+    this.scene.events.emit("healthChanged", value, this.health);
+  }
+
+  private emitter: Phaser.GameObjects.Particles.ParticleEmitter;
 
   constructor(params) {
     super(params.scene, params.x, params.y, params.key);
@@ -25,24 +39,24 @@ export class Player extends Phaser.GameObjects.Image {
 
   private init(): void {
     this.scene.physics.world.enable(this);
-    this.health = 5;
+    this.ownHealth = MAX_HEALTH;
 
     const particles = this.scene.add.particles("green");
-    const self = this;
+    const player = this;
 
     const particleColl = {
       contains(x, y) {
-        (self.scene as GameScene).asteroids.getChildren().forEach((asteroid: Phaser.GameObjects.Sprite) => {
+        (player.scene as GameScene).asteroids.getChildren().forEach((asteroid: Phaser.GameObjects.Sprite) => {
           const hit = (asteroid.body as Phaser.Physics.Arcade.Body).hitTest(x, y);
 
-          if (hit) { (self.scene as GameScene).destroyAsteroid(self, asteroid); }
+          if (hit) { (player.scene as GameScene).destroyAsteroid(player, asteroid); }
 
           return hit;
         });
       },
     };
 
-    const emitter = particles.createEmitter({
+    this.emitter = particles.createEmitter({
       angle: 270,
       blendMode: "ADD",
       deathZone: { type: "onEnter", source: particleColl },
@@ -54,7 +68,7 @@ export class Player extends Phaser.GameObjects.Image {
     this.angle = 180;
     this.setScale(0.5);
     (this.body as Phaser.Physics.Arcade.Body).setCollideWorldBounds(true);
-    emitter.startFollow(this);
+    this.emitter.startFollow(this);
     this.scene.physics.add.collider(this, (this.scene as GameScene).atmosphereLimit);
   }
 }

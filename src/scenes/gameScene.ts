@@ -1,5 +1,5 @@
 import "phaser";
-import { Player } from "../entities/player";
+import { MAX_HEALTH, Player } from "../entities/player";
 
 export class GameScene extends Phaser.Scene {
   public scoreText: Phaser.GameObjects.BitmapText;
@@ -34,20 +34,20 @@ export class GameScene extends Phaser.Scene {
   public create(): void {
     this.asteroidsDestroyed = 0;
     this.cursors = this.input.keyboard.createCursorKeys();
-    this.muteMusicKey = this.input.keyboard.addKey("M");
     this.add.image(400, 300, "sky");
 
     this.scoreText = this.add.bitmapText(70, 16, "score_font", "0", 32);
     this.scoreText.setLetterSpacing(15);
     this.add.image(35, 32, "asteroid").setScale(0.4);
 
+    this.muteMusicKey = this.input.keyboard.addKey("M");
     this.battleMusic = this.sound.add("battle_theme") as Phaser.Sound.HTML5AudioSound;
     this.battleMusic.setMute(true);
     this.battleMusic.play();
 
     this.healthpoints = this.add.group({
       key: "healthpoint",
-      repeat: 4,
+      repeat: MAX_HEALTH - 1,
       setXY: { x: 550, y: 32, stepX: 50 },
     } as Phaser.Types.GameObjects.Group.GroupConfig);
 
@@ -62,6 +62,30 @@ export class GameScene extends Phaser.Scene {
       scene: this,
       x: 400,
       y: 810,
+    });
+
+    this.events.on("healthChanged", (oldHealth: number, newHealth: number) => {
+      if (newHealth === 0) {
+        this.goToGameOverScene();
+      }
+      const healthpointsScheme: boolean[] = Array(MAX_HEALTH);
+
+      let emptyHealthpoints: number = MAX_HEALTH - newHealth;
+
+      for (let i = 0; i < MAX_HEALTH; i++) {
+        if (emptyHealthpoints) {
+          healthpointsScheme[i] = false;
+          emptyHealthpoints--;
+        } else {
+          healthpointsScheme[i] = true;
+        }
+      }
+
+      let index: number = 0;
+
+      this.healthpoints.children.iterate((healthpoint: Phaser.GameObjects.Sprite) => {
+        healthpoint.visible = healthpointsScheme[index++];
+      });
     });
 
     this.physics.add.overlap(this.atmosphereLimit, this.asteroids, this.missAsteroid, null, this);
@@ -90,41 +114,27 @@ export class GameScene extends Phaser.Scene {
   }
 
   public spawnAsteroid(x: number, y: number) {
-    const asteroid = this.asteroids.create(x, y, "asteroid");
-    asteroid.setScale(0.5);
+    this.asteroids.create(x, y, "asteroid").setScale(0.5);
   }
 
   public destroyAsteroid(player, asteroid) {
     if (!asteroid.visible) { return; }
-    asteroid.disableBody(true, true);
 
+    asteroid.disableBody(true, true);
     this.asteroidsDestroyed++;
     this.scoreText.setText(this.asteroidsDestroyed.toString());
   }
 
   public missAsteroid(atmosphereLimit, asteroid) {
     if (!asteroid.visible) { return; }
-    asteroid.disableBody(true, true);
 
-    let alreadyMadeInvisible = false;
-    this.healthpoints.children.iterate((healthpoint: Phaser.GameObjects.Sprite) => {
-      if (!healthpoint.visible || alreadyMadeInvisible) {
-        return;
-      } else {
-        alreadyMadeInvisible = true;
-        healthpoint.visible = false;
-      }
-    });
-    let healthpointsInvisible = 0;
-    this.healthpoints.children.iterate((healthpoint: Phaser.GameObjects.Sprite) => {
-      if (!healthpoint.visible) {
-        healthpointsInvisible++;
-      }
-    });
-    if (healthpointsInvisible === this.healthpoints.getLength()) {
-      this.battleMusic.stop();
-      this.scene.start("GameOverScene");
-    }
+    asteroid.disableBody(true, true);
+    this.player.health--;
+  }
+
+  public goToGameOverScene(): void {
+    this.battleMusic.stop();
+    this.scene.start("GameOverScene");
   }
 
 }

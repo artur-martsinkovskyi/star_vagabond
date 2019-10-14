@@ -42,14 +42,14 @@ export class WelcomeScene extends Phaser.Scene {
 
   public update(): void {
     if (this.startGameKey.isDown) {
-      this.onExit();
-      this.scene.start("GameScene");
+      this.goToGameScene();
     } else if (Phaser.Input.Keyboard.JustDown(this.muteMusicKey)) {
      this.menuMusic.setMute(!this.menuMusic.mute);
     }
   }
 
-  public onExit(): void {
+  public goToGameScene(): void {
     this.menuMusic.stop();
+    this.scene.start("GameScene");
   }
 }

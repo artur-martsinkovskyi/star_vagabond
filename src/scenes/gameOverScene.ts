@@ -31,7 +31,11 @@ export class GameOverScene extends Phaser.Scene {
 
   public update(): void {
     if (this.startGameKey.isDown) {
-      this.scene.start("GameScene");
+      this.goToGameScene();
     }
+  }
+
+  public goToGameScene(): void {
+    this.scene.start("GameScene");
   }
 }
